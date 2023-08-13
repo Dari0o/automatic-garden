@@ -1,11 +1,14 @@
 
-//more Information at: https://www.aeq-web.com/
 #include <SPI.h>
 #include <SD.h>
 #include <Wire.h>
 
 #include "RTClib.h"
 #include "DHT.h"
+
+#define sensor A2
+#define wet 210
+#define dry 510
 
 const int chipSelect = 10; //10 is default by shield, but normally on Pin 4
 int interval = 30;  //Log to SD Card every 5 seconds
@@ -44,7 +47,6 @@ void setup() {
 }
 
 void loop() {
-  
   if ((timer + interval * 100) < millis()) {
     timer = millis();
     get_logvalue(); //Get your value
@@ -61,6 +63,10 @@ void write_data() { //Write to SD card
 
   float Temp = dht.readTemperature();
   float Feuchte = dht.readHumidity();
+
+  int value = analogRead(sensor);
+  int pre = map(value, wet, dry, 100, 0);
+
 
   if(Feuchte < 60){
     digitalWrite(5, HIGH);
@@ -90,6 +96,8 @@ void write_data() { //Write to SD card
     dataFile.print(Temp);
     dataFile.print(" # Luftfeuchtigkeit in %: ");
     dataFile.print(Feuchte);
+    dataFile.print(" # Bodenfeuchtigkeit in %: ");
+    dataFile.print(pre);
     dataFile.println();
     dataFile.close(); 
 
@@ -110,6 +118,8 @@ void write_data() { //Write to SD card
     Serial.print(Temp);
     Serial.print(" # Luftfeuchtigkeit in %: ");
     Serial.print(Feuchte);
+    Serial.print(" # Bodenfeuchtigkeit in %: ");
+    Serial.print(pre);
     Serial.println();
   }
   else {
